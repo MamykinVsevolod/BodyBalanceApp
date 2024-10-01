@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.OutlinedCard
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.SegmentedButton
 import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 
@@ -29,7 +32,8 @@ fun TrainingScreen() {
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
-        }
+        },
+        bottomBar = { MyNavigationBar() }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -41,6 +45,11 @@ fun TrainingScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SegmentedButton()
+                LazyColumn {
+                    items(20) {
+                        OutlinedCard()
+                    }
+                }
             }
         }
     }

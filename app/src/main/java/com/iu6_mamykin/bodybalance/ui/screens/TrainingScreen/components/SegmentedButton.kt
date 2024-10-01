@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import com.iu6_mamykin.bodybalance.ui.theme.OutlinedColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +30,8 @@ fun SegmentedButton() {
                     activeContentColor = Color(0xFFE2E2E2),
                     activeBorderColor = Color(0xFF919191),
                     inactiveContainerColor = Color(0xFFFAF8FF),
-                    inactiveContentColor = Color(0xFFE2E2E2),
+                    //inactiveContentColor = Color(0xFFE2E2E2),
+                    inactiveContentColor = OutlinedColor,
                     inactiveBorderColor = Color(0xFF919191),
                     disabledActiveContainerColor = Color(0xFF474747),
                     disabledActiveContentColor = Color(0xFFE2E2E2),
