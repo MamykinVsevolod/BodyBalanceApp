@@ -33,7 +33,7 @@ fun TrainingScreen() {
                 )
             )
         },
-        bottomBar = { MyNavigationBar() }
+        bottomBar = { MyNavigationBar(0) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
