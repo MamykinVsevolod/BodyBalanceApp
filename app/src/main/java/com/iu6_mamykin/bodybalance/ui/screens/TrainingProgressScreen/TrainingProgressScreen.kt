@@ -25,8 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.OutlinedCardTitle
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.WorkOutElement
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.OutlinedCard
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.SegmentedButton
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
@@ -94,10 +95,10 @@ fun TrainingProgressScreen() {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SegmentedButton()
+                OutlinedCardTitle()
                 LazyColumn {
                     items(20) {
-                        OutlinedCard()
+                        WorkOutElement()
                     }
                 }
             }
