@@ -1,6 +1,9 @@
 package com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components
 
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -13,10 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 
 @Composable
-fun MyNavigationBar() {
-    var selectedItem by remember { mutableIntStateOf(0) }
+fun MyNavigationBar(index: Int) {
+    var selectedItem by remember { mutableIntStateOf(index) }
     val items = listOf("Тренировки", "Профиль", "Тех. поддержка")
     val selectedIcons = listOf(
         painterResource(R.drawable.directions_walk),
