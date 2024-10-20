@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -25,8 +26,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +39,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.OutlinedCardTitle
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.WorkOutElement
@@ -162,20 +168,62 @@ fun CreateUpdateTrainingScreen() {
                         DatePicker(state = datePickerState)
                     }
                 }
-                var mutableTime by remember { mutableStateOf(" ") }
+                var showTimePicker by remember { mutableStateOf(false) }
+                val timePickerState = rememberTimePickerState()
+                var selectedTime by remember { mutableStateOf(" ") }
                 OutlinedTextField(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BlackColor,
                         focusedLabelColor = BlackColor
                     ),
-                    value = mutableTime,
+                    value = selectedTime,
                     singleLine = true,
-                    onValueChange = { mutableTime = it },
+                    onValueChange = { /*mutableTime = it*/ },
                     label = { Text("Время") },
+                    readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
+                        .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.calendar_icon),
+                            contentDescription = "Выбор времени",
+                            modifier = Modifier
+                                .clickable {
+                                    showTimePicker = !showTimePicker
+                                }
+                                .padding(12.dp)
+                        )
+                    }
                 )
+                if (showTimePicker) {
+                    AlertDialog(
+                        title = {
+                            Text(text = "Выбрать время", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        },
+                        text = { TimePicker(state = timePickerState) },
+                        onDismissRequest = { showTimePicker = !showTimePicker },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    // Получаем выбранные часы и минуты из TimePickerState
+                                    val hours = timePickerState.hour
+                                    val minutes = timePickerState.minute
+
+                                    // Форматируем время в строку
+                                    selectedTime = String.format("%02d:%02d", hours, minutes)
+                                    showTimePicker = !showTimePicker
+                                }) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showTimePicker = !showTimePicker }) {
+                                Text("Отмена")
+                            }
+                        }
+                    )
+                }
             }
         }
     }
