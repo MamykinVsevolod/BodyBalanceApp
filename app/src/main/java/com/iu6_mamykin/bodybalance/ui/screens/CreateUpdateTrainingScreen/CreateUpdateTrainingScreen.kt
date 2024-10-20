@@ -280,7 +280,11 @@ fun CreateUpdateTrainingScreen() {
                                 .padding(start = 12.dp, end = 12.dp, bottom = 5.dp)
                         )
                         IconButton(
-                            onClick = {  /*do something*/ },
+                            onClick = {
+                                workOutElements = workOutElements.toMutableList().also {
+                                    it.removeAt(index)
+                                }
+                            },
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = DeleteButtonColor, contentColor = WhiteColor
                             ),
