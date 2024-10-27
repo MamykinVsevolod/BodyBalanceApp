@@ -18,7 +18,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,7 +66,11 @@ import java.util.Locale
 fun CreateUpdateTrainingScreen() {
     val context = LocalContext.current
 
-    var mutableTitle by remember { mutableStateOf(" ") }
+    // для НАЗВАНИЯ
+    var mutableTitle by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf("Кардио-тренировка", "Моя в зале", "В зале с Дашей") // Замените на свои значения
+    val filteredOptions = options.filter { it.contains(mutableTitle, ignoreCase = true) }
 
     // для ДАТЫ
     var showDatePicker by remember { mutableStateOf(false) }
@@ -90,9 +96,15 @@ fun CreateUpdateTrainingScreen() {
     val timePickerNotifyState = rememberTimePickerState()
     var selectedNotifyTime by remember { mutableStateOf(" ") }
 
+    // для ВЫБОРА НАПОМИНАНИЯ
     var checked by remember { mutableStateOf(false) }
 
+    // для УПРАЖНЕНИЙ
     var workOutElements by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+    val workOutOptions = listOf("Упражнение 1", "Упражнение 2", "Упражнение 3")
+
+
+
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = {},
@@ -139,7 +151,7 @@ fun CreateUpdateTrainingScreen() {
             )
             {
                 item {
-                    OutlinedTextField(
+                    /*OutlinedTextField(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
                         ),
@@ -150,7 +162,53 @@ fun CreateUpdateTrainingScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
-                    )
+                    )*/
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = if (mutableTitle.isEmpty()) " " else mutableTitle,
+                            onValueChange = {
+                                mutableTitle = it
+                                expanded = true  // раскрываем меню при вводе
+                            },
+                            label = { Text("Название") },
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.dropdown_icon),
+                                    contentDescription = "Dropdown Arrow",
+                                    Modifier.clickable { expanded = true }  // раскрываем меню при нажатии на стрелку
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BlackColor,
+                                focusedLabelColor = BlackColor
+                            ),
+                            singleLine = true,
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            filteredOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        mutableTitle = option  // подставляем выбранный текст в поле
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
                 item {
                     OutlinedTextField(
@@ -285,14 +343,20 @@ fun CreateUpdateTrainingScreen() {
                             }
                         )
                         if (showDateNotifyPicker) {
-                            DatePickerDialog(onDismissRequest = { showDateNotifyPicker = !showDateNotifyPicker },
+                            DatePickerDialog(onDismissRequest = {
+                                showDateNotifyPicker = !showDateNotifyPicker
+                            },
                                 confirmButton = {
-                                    TextButton(onClick = { showDateNotifyPicker = !showDateNotifyPicker }) {
+                                    TextButton(onClick = {
+                                        showDateNotifyPicker = !showDateNotifyPicker
+                                    }) {
                                         Text("OK")
                                     }
                                 },
                                 dismissButton = {
-                                    TextButton(onClick = { showDateNotifyPicker = !showDateNotifyPicker }) {
+                                    TextButton(onClick = {
+                                        showDateNotifyPicker = !showDateNotifyPicker
+                                    }) {
                                         Text("Cancel")
                                     }
                                 }
@@ -336,14 +400,17 @@ fun CreateUpdateTrainingScreen() {
                                         val hours = timePickerNotifyState.hour
                                         val minutes = timePickerNotifyState.minute
 
-                                        selectedNotifyTime = String.format("%02d:%02d", hours, minutes)
+                                        selectedNotifyTime =
+                                            String.format("%02d:%02d", hours, minutes)
                                         showTimeNotifyPicker = !showTimeNotifyPicker
                                     }) {
                                         Text("OK")
                                     }
                                 },
                                 dismissButton = {
-                                    TextButton(onClick = { showTimeNotifyPicker = !showTimeNotifyPicker }) {
+                                    TextButton(onClick = {
+                                        showTimeNotifyPicker = !showTimeNotifyPicker
+                                    }) {
                                         Text("Отмена")
                                     }
                                 }
@@ -366,7 +433,7 @@ fun CreateUpdateTrainingScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        OutlinedTextField(
+                        /*OutlinedTextField(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
                             ),
@@ -397,6 +464,78 @@ fun CreateUpdateTrainingScreen() {
                                 painterResource(R.drawable.delete_button_second),
                                 contentDescription = "Удалить"
                             )
+                        }*/
+                        var expandedWorkOut by remember { mutableStateOf(false) }
+                        val filteredOptionsWorkOut = workOutOptions.filter { it.contains(workOutElements[index].first, ignoreCase = true) }
+
+                        ExposedDropdownMenuBox(
+                            expanded = expandedWorkOut,
+                            onExpandedChange = { expandedWorkOut = !expandedWorkOut },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 12.dp, end = 12.dp, bottom = 5.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = workOutElements[index].first,
+                                onValueChange = { newName ->
+                                    workOutElements = workOutElements.toMutableList().also {
+                                        it[index] = it[index].copy(first = newName)
+                                    }
+                                    expandedWorkOut = true  // открываем меню при вводе
+                                },
+                                label = { Text("Название") },
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dropdown_icon),
+                                        contentDescription = "Dropdown Arrow",
+                                        Modifier.clickable { expandedWorkOut = true }
+                                    )
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BlackColor,
+                                    focusedLabelColor = BlackColor
+                                ),
+                                singleLine = true,
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = expandedWorkOut,
+                                onDismissRequest = { expandedWorkOut = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                filteredOptionsWorkOut.forEach { workOutOptions ->
+                                    DropdownMenuItem(
+                                        text = { Text(workOutOptions, fontSize = 16.sp) },
+                                        onClick = {
+                                            workOutElements = workOutElements.toMutableList().also {
+                                                it[index] = it[index].copy(first = workOutOptions)
+                                            }
+                                            expandedWorkOut = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        IconButton(
+                            onClick = {
+                                workOutElements = workOutElements.toMutableList().also {
+                                    it.removeAt(index)
+                                }
+                            },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = DeleteButtonColor,
+                                contentColor = WhiteColor
+                            ),
+                            modifier = Modifier.padding(end = 12.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.delete_button_second),
+                                contentDescription = "Удалить"
+                            )
                         }
                     }
                     OutlinedTextField(
@@ -415,6 +554,22 @@ fun CreateUpdateTrainingScreen() {
                             .height(94.dp)
                             .padding(start = 12.dp, end = 12.dp)
                     )
+                    /*OutlinedTextField(
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                        ),
+                        value = workOutElements[index].second,
+                        onValueChange = { newNote ->
+                            workOutElements = workOutElements.toMutableList().also {
+                                it[index] = it[index].copy(second = newNote)
+                            }
+                        },
+                        label = { Text("Заметки") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(94.dp)
+                            .padding(start = 12.dp, end = 12.dp)
+                    )*/
                 }
             }
         }
