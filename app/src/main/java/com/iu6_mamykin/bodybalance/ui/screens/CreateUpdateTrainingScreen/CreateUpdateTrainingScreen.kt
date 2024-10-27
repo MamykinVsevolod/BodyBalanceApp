@@ -66,15 +66,29 @@ fun CreateUpdateTrainingScreen() {
 
     var mutableTitle by remember { mutableStateOf(" ") }
 
+    // для ДАТЫ
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val selectedDate = datePickerState.selectedDateMillis?.let {
         convertMillisToDate(it)
     } ?: " "
 
+    // для даты НАПОМИНАНИЯ
+    var showDateNotifyPicker by remember { mutableStateOf(false) }
+    val datePickerNotifyState = rememberDatePickerState()
+    val selectedNotifyDate = datePickerState.selectedDateMillis?.let {
+        convertMillisToDate(it)
+    } ?: " "
+
+    // для ВРЕМЕНИ
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState()
     var selectedTime by remember { mutableStateOf(" ") }
+
+    // для времени НАПОМИНАНИЯ
+    var showTimeNotifyPicker by remember { mutableStateOf(false) }
+    val timePickerNotifyState = rememberTimePickerState()
+    var selectedNotifyTime by remember { mutableStateOf(" ") }
 
     var checked by remember { mutableStateOf(false) }
 
@@ -246,6 +260,95 @@ fun CreateUpdateTrainingScreen() {
                             onClick = { },
                             label = { Text("Напоминание") },
                         )
+                    }
+                    if (checked) {
+                        OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                            ),
+                            value = selectedNotifyDate,
+                            singleLine = true,
+                            onValueChange = { },
+                            readOnly = true,
+                            label = { Text("Дата") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                            trailingIcon = {
+                                Icon(painter = painterResource(id = R.drawable.calendar_icon),
+                                    contentDescription = "Выбор даты",
+                                    modifier = Modifier
+                                        .clickable {
+                                            showDateNotifyPicker = !showDateNotifyPicker
+                                        }
+                                        .padding(12.dp))
+                            }
+                        )
+                        if (showDateNotifyPicker) {
+                            DatePickerDialog(onDismissRequest = { showDateNotifyPicker = !showDateNotifyPicker },
+                                confirmButton = {
+                                    TextButton(onClick = { showDateNotifyPicker = !showDateNotifyPicker }) {
+                                        Text("OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDateNotifyPicker = !showDateNotifyPicker }) {
+                                        Text("Cancel")
+                                    }
+                                }
+                            ) {
+                                DatePicker(state = datePickerNotifyState)
+                            }
+                        }
+                        OutlinedTextField(colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                        ),
+                            value = selectedNotifyTime,
+                            singleLine = true,
+                            onValueChange = { /*mutableTime = it*/ },
+                            label = { Text("Время") },
+                            readOnly = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                            trailingIcon = {
+                                Icon(painter = painterResource(id = R.drawable.clock_icon),
+                                    contentDescription = "Выбор времени",
+                                    modifier = Modifier
+                                        .clickable {
+                                            showTimeNotifyPicker = !showTimeNotifyPicker
+                                        }
+                                        .padding(12.dp))
+                            }
+                        )
+                        if (showTimeNotifyPicker) {
+                            AlertDialog(title = {
+                                Text(
+                                    text = "Выбрать время",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                                text = { TimePicker(state = timePickerNotifyState) },
+                                onDismissRequest = { showTimeNotifyPicker = !showTimeNotifyPicker },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        val hours = timePickerNotifyState.hour
+                                        val minutes = timePickerNotifyState.minute
+
+                                        selectedNotifyTime = String.format("%02d:%02d", hours, minutes)
+                                        showTimeNotifyPicker = !showTimeNotifyPicker
+                                    }) {
+                                        Text("OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showTimeNotifyPicker = !showTimeNotifyPicker }) {
+                                        Text("Отмена")
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
                 item {
