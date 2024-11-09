@@ -510,22 +510,6 @@ fun CreateUpdateTrainingScreen() {
                             .height(94.dp)
                             .padding(start = 12.dp, end = 12.dp)
                     )
-                    /*OutlinedTextField(
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                        ),
-                        value = workOutElements[index].second,
-                        onValueChange = { newNote ->
-                            workOutElements = workOutElements.toMutableList().also {
-                                it[index] = it[index].copy(second = newNote)
-                            }
-                        },
-                        label = { Text("Заметки") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(94.dp)
-                            .padding(start = 12.dp, end = 12.dp)
-                    )*/
                 }
             }
         }
