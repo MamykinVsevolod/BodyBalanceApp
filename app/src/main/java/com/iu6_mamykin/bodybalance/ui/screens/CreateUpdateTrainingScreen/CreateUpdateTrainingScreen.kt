@@ -151,18 +151,6 @@ fun CreateUpdateTrainingScreen() {
             )
             {
                 item {
-                    /*OutlinedTextField(
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                        ),
-                        value = mutableTitle,
-                        singleLine = true,
-                        onValueChange = { mutableTitle = it },
-                        label = { Text("Название") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
-                    )*/
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = !expanded },
@@ -433,38 +421,6 @@ fun CreateUpdateTrainingScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        /*OutlinedTextField(
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                            ),
-                            value = workOutElements[index].first,
-                            singleLine = true,
-                            onValueChange = { newName ->
-                                workOutElements = workOutElements.toMutableList().also {
-                                    it[index] = it[index].copy(first = newName)
-                                }
-                            },
-                            label = { Text("Название") },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 12.dp, end = 12.dp, bottom = 5.dp)
-                        )
-                        IconButton(
-                            onClick = {
-                                workOutElements = workOutElements.toMutableList().also {
-                                    it.removeAt(index)
-                                }
-                            },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = DeleteButtonColor, contentColor = WhiteColor
-                            ),
-                            modifier = Modifier.padding(end = 12.dp)
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.delete_button_second),
-                                contentDescription = "Удалить"
-                            )
-                        }*/
                         var expandedWorkOut by remember { mutableStateOf(false) }
                         val filteredOptionsWorkOut = workOutOptions.filter { it.contains(workOutElements[index].first, ignoreCase = true) }
 

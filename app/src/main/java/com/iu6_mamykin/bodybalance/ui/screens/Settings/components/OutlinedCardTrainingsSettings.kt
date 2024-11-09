@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.iu6_mamykin.bodybalance.R
 
 @Composable
-fun OutlinedCardTrainings() {
+fun OutlinedCardTrainingsSettings(text: String) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -32,7 +32,7 @@ fun OutlinedCardTrainings() {
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 9.dp, start = 12.dp, end = 12.dp)
+            .padding(top = 9.dp, start = 12.dp, end = 12.dp, bottom = 14.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -40,7 +40,7 @@ fun OutlinedCardTrainings() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Названия тренировок",
+                text = text,
                 modifier = Modifier
                     .padding(top = 28.dp, start = 16.dp, bottom = 28.dp),
                 textAlign = TextAlign.Center,
