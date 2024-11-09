@@ -52,16 +52,14 @@ fun WorkOutElement() {
             Text(
                 text = "Жим штанги",
                 modifier = Modifier
-                    .padding(top = 16.dp, start = 16.dp),
-                textAlign = TextAlign.Center,
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
             Text(
                 text = "Вес: 30-40, 3 подхода",
                 modifier = Modifier
-                    .padding(top = 4.dp, start = 16.dp, bottom = 16.dp),
-                textAlign = TextAlign.Center,
+                    .padding(top = 4.dp, start = 16.dp, bottom = 16.dp, end = 16.dp),
                 fontSize = 14.sp
             )
         }

@@ -20,8 +20,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.iu6_mamykin.bodybalance.R
-import com.iu6_mamykin.bodybalance.ui.screens.Settings.components.OutlinedCardExamples
-import com.iu6_mamykin.bodybalance.ui.screens.Settings.components.OutlinedCardTrainings
+import com.iu6_mamykin.bodybalance.ui.screens.Settings.components.OutlinedCardTrainingsSettings
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
@@ -83,8 +82,8 @@ fun SettingsScreen() {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedCardTrainings()
-                OutlinedCardExamples()
+                OutlinedCardTrainingsSettings("Названия тренировок")
+                OutlinedCardTrainingsSettings("Названия упражнений")
             }
         }
     }
