@@ -18,17 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.ui.screens.Settings.components.OutlinedCardTrainingsSettings
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -43,7 +42,7 @@ fun SettingsScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painterResource(R.drawable.arrow_back),
                             contentDescription = "Назад"
@@ -71,7 +70,7 @@ fun SettingsScreen() {
                 ),
             )
         },
-        bottomBar = { MyNavigationBar(1) }
+        bottomBar = { MyNavigationBar(navController = navController, 1) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -82,17 +81,18 @@ fun SettingsScreen() {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedCardTrainingsSettings("Названия тренировок")
-                OutlinedCardTrainingsSettings("Названия упражнений")
+                OutlinedCardTrainingsSettings(navController, "Названия тренировок", true)
+                OutlinedCardTrainingsSettings(navController, "Названия упражнений", false)
             }
         }
     }
 }
 
+/*
 @Preview
 @Composable
 fun SettingsScreenPreview() {
     BodyBalanceTheme {
-        SettingsScreen()
+        SettingsScreen(navController: NavController)
     }
-}
+}*/

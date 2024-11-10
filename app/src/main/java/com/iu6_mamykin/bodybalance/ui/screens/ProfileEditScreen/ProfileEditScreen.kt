@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
@@ -35,18 +34,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.ui.screens.CreateUpdateTrainingScreen.convertMillisToDate
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileEditScreen() {
+fun ProfileEditScreen(navController: NavController) {
     var mutableName by remember { mutableStateOf("") }
 
     var mutableEmail by remember { mutableStateOf("") }
@@ -77,7 +75,7 @@ fun ProfileEditScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painterResource(R.drawable.arrow_back),
                             contentDescription = "Назад"
@@ -105,7 +103,7 @@ fun ProfileEditScreen() {
                 ),
             )
         },
-        bottomBar = { MyNavigationBar(1) }
+        bottomBar = { MyNavigationBar(navController = navController, 1) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -221,10 +219,11 @@ fun ProfileEditScreen() {
     }
 }
 
+/*
 @Preview
 @Composable
 fun ProfileEditScreenPreview() {
     BodyBalanceTheme {
-        ProfileEditScreen()
+        ProfileEditScreen(navController: NavController)
     }
-}
+}*/

@@ -1,6 +1,7 @@
-package com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components
+package com.iu6_mamykin.bodybalance.ui.screens.TrainingListScreen.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,13 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.OutlinedCard
+import androidx.navigation.NavController
+import com.iu6_mamykin.bodybalance.navigation.Routes
 
 @Composable
-fun OutlinedCard() {
+fun OutlinedCard(navController: NavController, trainingId: Int) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -26,6 +28,7 @@ fun OutlinedCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 9.dp, start = 12.dp, end = 12.dp)
+            .clickable { navController.navigate(Routes.trainingProgressWithArgs(trainingId.toString())) }
     ) {
         Text(
             text = "Кардио-тренировка",

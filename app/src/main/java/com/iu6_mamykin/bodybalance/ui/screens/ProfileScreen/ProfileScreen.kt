@@ -18,19 +18,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.ui.screens.ProfileScreen.components.EditButtonProfile
 import com.iu6_mamykin.bodybalance.ui.screens.ProfileScreen.components.OutlinedCardTitle
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -49,7 +49,7 @@ fun ProfileScreen() {
                 },
                 actions = {
                     IconButton(
-                        onClick = { /* do something */ },
+                        onClick = { navController.navigate(Routes.SETTINGS) },
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = BlackColor,
                             contentColor = WhiteColor
@@ -66,7 +66,7 @@ fun ProfileScreen() {
                 ),
             )
         },
-        bottomBar = { MyNavigationBar(1) }
+        bottomBar = { MyNavigationBar(navController = navController, 1) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -79,15 +79,16 @@ fun ProfileScreen() {
             Box() {
                 OutlinedCardTitle()
             }
-            EditButtonProfile()
+            EditButtonProfile(navController)
         }
     }
 }
 
+/*
 @Preview
 @Composable
 fun ProfileScreenPreview() {
     BodyBalanceTheme {
-        ProfileScreen()
+        ProfileScreen(navController: NavController)
     }
-}
+}*/

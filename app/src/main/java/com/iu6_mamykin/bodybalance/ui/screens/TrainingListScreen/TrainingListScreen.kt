@@ -17,19 +17,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.OutlinedCard
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.SegmentedButton
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.Routes
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingListScreen.components.OutlinedCard
+import com.iu6_mamykin.bodybalance.ui.screens.TrainingListScreen.components.SegmentedButton
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingScreen() {
+fun TrainingListScreen(navController: NavController) {
+    val trainingId = 1
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -41,7 +42,7 @@ fun TrainingScreen() {
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { /* do something */ },
+                onClick = { navController.navigate(Routes.CREATE_UPDATE_TRAINING) },
                 icon = {
                     Icon(
                         painterResource(R.drawable.add_icon), contentDescription = "Добавить"
@@ -52,7 +53,7 @@ fun TrainingScreen() {
                 contentColor = WhiteColor
             )
         },
-        bottomBar = { MyNavigationBar(0) }
+        bottomBar = { MyNavigationBar(navController = navController, 0) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -66,7 +67,7 @@ fun TrainingScreen() {
                 SegmentedButton()
                 LazyColumn {
                     items(20) {
-                        OutlinedCard()
+                        OutlinedCard(navController = navController, trainingId = trainingId)
                     }
                 }
             }
@@ -74,10 +75,11 @@ fun TrainingScreen() {
     }
 }
 
+/*
 @Preview
 @Composable
 fun TrainingScreenPreview() {
     BodyBalanceTheme {
-        TrainingScreen()
+        TrainingListScreen(navController: NavController)
     }
-}
+}*/
