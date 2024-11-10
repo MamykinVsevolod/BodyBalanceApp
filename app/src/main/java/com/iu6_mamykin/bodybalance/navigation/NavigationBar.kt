@@ -1,9 +1,6 @@
-package com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components
+package com.iu6_mamykin.bodybalance.navigation
 
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -15,13 +12,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
-import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 
 @Composable
-fun MyNavigationBar(index: Int) {
+fun MyNavigationBar(navController: NavController, index: Int) {
     var selectedItem by remember { mutableIntStateOf(index) }
     val items = listOf("Тренировки", "Профиль", "Тех. поддержка")
+    val routes = listOf(Routes.TRAINING_LIST, Routes.PROFILE, Routes.FEEDBACK)
     val selectedIcons = listOf(
         painterResource(R.drawable.directions_walk),
         painterResource(R.drawable.account_circle),
@@ -58,7 +56,29 @@ fun MyNavigationBar(index: Int) {
                 ),
                 label = { Text(item) },
                 selected = selectedItem == index,
-                onClick = { selectedItem = index }
+                onClick = {
+                    selectedItem = index
+                    if (routes[index] == Routes.PROFILE) {
+                        // Сначала очищаем весь стек, затем переходим к основному экрану профиля
+                        navController.navigate(Routes.PROFILE) {
+                            popUpTo(0) { inclusive = true } // Очищаем стек до самого начала
+                            launchSingleTop = true          // Избегаем дублирования корневого экрана
+                        }
+                    } else {
+                        // Для остальных вкладок обычный переход
+                        navController.navigate(routes[index]) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    /*navController.navigate(routes[index]) {
+                        // Эти параметры очищают стек до текущего экрана, предотвращая накопление.
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }*/
+                }
             )
         }
     }

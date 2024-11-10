@@ -22,20 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingsWorkoutNamesEditScreen.components.OutlinedCardTrainings
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingsWorkoutNamesEditScreen.components.OutlinedCardWorkout
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingsWorkoutNamesEditScreen(trainings: Boolean) {
+fun TrainingsWorkoutNamesEditScreen(navController: NavController, trainings: Boolean) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -50,7 +49,7 @@ fun TrainingsWorkoutNamesEditScreen(trainings: Boolean) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painterResource(R.drawable.arrow_back),
                             contentDescription = "Назад"
@@ -78,7 +77,7 @@ fun TrainingsWorkoutNamesEditScreen(trainings: Boolean) {
                 ),
             )
         },
-        bottomBar = { MyNavigationBar(1) }
+        bottomBar = { MyNavigationBar(navController = navController, 1) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -149,10 +148,11 @@ fun TrainingsWorkoutNamesEditScreen(trainings: Boolean) {
     }
 }
 
+/*
 @Preview
 @Composable
 fun TrainingsWorkoutNamesEditScreenPreview() {
     BodyBalanceTheme {
         TrainingsWorkoutNamesEditScreen(false)
     }
-}
+}*/

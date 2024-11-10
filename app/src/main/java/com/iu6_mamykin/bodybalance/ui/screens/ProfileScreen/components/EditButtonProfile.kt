@@ -14,18 +14,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 
 @Composable
-fun EditButtonProfile() {
+fun EditButtonProfile(navController: NavController) {
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.Bottom,
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedButton(
-            onClick = {  },
+            onClick = { navController.navigate(Routes.PROFILE_EDIT) },
             colors = ButtonDefaults.outlinedButtonColors(contentColor = BlackColor)
         ) {
             Icon(

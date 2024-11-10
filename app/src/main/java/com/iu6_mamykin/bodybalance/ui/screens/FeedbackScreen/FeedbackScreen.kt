@@ -24,17 +24,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.ButtonSend
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.CustomAlertDialog
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.Fields
-import com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components.MyNavigationBar
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
+import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedbackScreen() {
+fun FeedbackScreen(navController: NavController) {
     val context = LocalContext.current
     var openAlertDialog by remember { mutableStateOf(false) }
     var mutableSubject by remember { mutableStateOf(" ") }
@@ -74,7 +73,7 @@ fun FeedbackScreen() {
                 )
             )
         },
-        bottomBar = { MyNavigationBar(2) }
+        bottomBar = { MyNavigationBar(navController = navController, 2) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -108,10 +107,10 @@ fun FeedbackScreen() {
     }
 }
 
-@Preview
+/*@Preview
 @Composable
 fun FeedbackScreenPreview() {
     BodyBalanceTheme {
-        FeedbackScreen()
+        FeedbackScreen(navController: NavController)
     }
-}
+}*/

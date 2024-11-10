@@ -25,13 +25,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.OutlinedCardTitle
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.WorkOutElement
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
-import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
@@ -39,14 +39,14 @@ import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingProgressScreen() {
+fun TrainingProgressScreen(navController: NavController, trainingId: Int) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painterResource(R.drawable.arrow_back),
                             contentDescription = "Назад"
@@ -55,7 +55,8 @@ fun TrainingProgressScreen() {
                 },
                 actions = {
                     Button(
-                        onClick = { /* do something */ },
+                        onClick = { // ДОБАВИТЬ ЛОГИКУ РЕДАКТИРОВАНИЯ КОНКРЕТНОЙ ТРЕНИРОВКИ
+                            navController.navigate(Routes.CREATE_UPDATE_TRAINING) },
                         colors = ButtonDefaults.buttonColors(containerColor = BlackColor)
                     ) {
                         Icon(
@@ -67,7 +68,9 @@ fun TrainingProgressScreen() {
                         Text("Редактировать")
                     }
                     IconButton(
-                        onClick = { /* do something */ },
+                        onClick = { // Добавить логику удаления тренировки
+                            navController.navigate(Routes.TRAINING_LIST)
+                        },
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = DeleteButtonColor,
                             contentColor = WhiteColor
@@ -86,7 +89,9 @@ fun TrainingProgressScreen() {
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { /* do something */ },
+                onClick = { // Добавить логику сохранения в выполненные тренировки
+                    navController.navigate(Routes.TRAINING_LIST)
+                },
                 icon = { Icon(Icons.Filled.Check, "Выполнена") },
                 text = { Text(text = "Выполнена") },
                 containerColor = GreenColor,
@@ -114,10 +119,11 @@ fun TrainingProgressScreen() {
     }
 }
 
+/*
 @Preview
 @Composable
 fun TrainingProgressScreenPreview() {
     BodyBalanceTheme {
-        TrainingProgressScreen()
+        TrainingProgressScreen(navController: NavController)
     }
-}
+}*/

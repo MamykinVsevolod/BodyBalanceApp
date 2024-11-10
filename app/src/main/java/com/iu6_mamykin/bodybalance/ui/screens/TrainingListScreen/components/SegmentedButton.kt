@@ -1,4 +1,4 @@
-package com.iu6_mamykin.bodybalance.ui.screens.TrainingScreen.components
+package com.iu6_mamykin.bodybalance.ui.screens.TrainingListScreen.components
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SegmentedButton

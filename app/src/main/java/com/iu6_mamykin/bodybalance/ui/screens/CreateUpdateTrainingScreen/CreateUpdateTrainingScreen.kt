@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
@@ -63,7 +64,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateUpdateTrainingScreen() {
+fun CreateUpdateTrainingScreen(navController: NavController) {
     val context = LocalContext.current
 
     // для НАЗВАНИЯ
@@ -109,7 +110,7 @@ fun CreateUpdateTrainingScreen() {
         CenterAlignedTopAppBar(
             title = {},
             navigationIcon = {
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painterResource(R.drawable.arrow_back), contentDescription = "Назад"
                     )
@@ -516,13 +517,15 @@ fun CreateUpdateTrainingScreen() {
     }
 }
 
+/*
 @Preview
 @Composable
 fun CreateUpdateTrainingScreenPreview() {
     BodyBalanceTheme {
-        CreateUpdateTrainingScreen()
+        CreateUpdateTrainingScreen(navController: NavController)
     }
 }
+*/
 
 fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
