@@ -137,8 +137,25 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
                         Text("Редактировать")
                     }
                     IconButton(
-                        onClick = { // Добавить логику удаления тренировки
-                            navController.navigate(Routes.TRAINING_LIST)
+                        onClick = {
+                            // Запускаем корутину для удаления тренировки
+                            scope.launch {
+                                // Удаляем тренировку по её ID из базы данных
+                                val training = database.trainingDao().getTrainingById(trainingId)
+                                training?.let {
+                                    database.trainingDao().deleteTrainingById(trainingId)
+                                }
+
+                                // Отображаем Toast-сообщение с подтверждением удаления
+                                Toast.makeText(
+                                    context,
+                                    "Тренировка удалена",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                // Переходим обратно к списку тренировок
+                                navController.navigate(Routes.TRAINING_LIST)
+                            }
                         },
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = DeleteButtonColor,

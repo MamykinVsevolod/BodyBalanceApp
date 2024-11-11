@@ -8,7 +8,7 @@ interface TrainingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(training: Training): Long
 
-    @Query("SELECT * FROM Trainings WHERE isCompleted = :isCompleted ORDER BY dateTime DESC")
+    @Query("SELECT * FROM Trainings WHERE isCompleted = :isCompleted ORDER BY dateTime ASC")
     suspend fun getTrainingsByCompletionStatus(isCompleted: Boolean): List<Training>
 
     @Delete
@@ -19,4 +19,7 @@ interface TrainingDao {
 
     @Query("UPDATE Trainings SET isCompleted = :isCompleted WHERE trainingId = :trainingId")
     suspend fun updateTrainingCompletionStatus(trainingId: Int, isCompleted: Boolean)
+
+    @Query("DELETE FROM Trainings WHERE trainingId = :trainingId")
+    suspend fun deleteTrainingById(trainingId: Int)
 }

@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,7 @@ import com.iu6_mamykin.bodybalance.data.entities.Training
 import com.iu6_mamykin.bodybalance.data.entities.TrainingName
 import com.iu6_mamykin.bodybalance.data.entities.Workout
 import com.iu6_mamykin.bodybalance.data.entities.WorkoutName
+import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
@@ -81,8 +83,12 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
     // для НАЗВАНИЯ
     var mutableTitle by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val options =
-        listOf("Кардио-тренировка", "Моя в зале", "В зале с Дашей") // Замените на свои значения
+    val trainingNames = remember { mutableStateOf<List<String>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        val trainingNamesList = database.trainingNameDao().getAllTrainingNames()
+        trainingNames.value = trainingNamesList.map { it.name }
+    }
+    val options = trainingNames.value
     val filteredOptions = options.filter { it.contains(mutableTitle, ignoreCase = true) }
 
     // для ДАТЫ
@@ -144,6 +150,7 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
                                 database,
                                 context
                             )
+                            navController.navigate(Routes.TRAINING_LIST)
                         }
 
                     },
