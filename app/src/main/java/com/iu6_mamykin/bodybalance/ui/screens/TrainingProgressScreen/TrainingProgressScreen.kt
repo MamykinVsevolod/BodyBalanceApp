@@ -1,5 +1,6 @@
 package com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -27,8 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -42,6 +46,7 @@ import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
+import kotlinx.coroutines.launch
 import java.util.Date
 
 
@@ -50,6 +55,7 @@ import java.util.Date
 fun TrainingProgressScreen(navController: NavController, database: AppDatabase, trainingId: Int) {
     // Состояния для хранения данных тренировки и упражнений
     val trainingNameState = remember { mutableStateOf<String?>(null) }
+    val trainingIsCompleted = remember { mutableStateOf<Boolean?>(null) }
     val dateState = remember { mutableStateOf<Date?>(null) }
     val timeState = remember { mutableStateOf<Date?>(null) }
     val reminderState = remember { mutableStateOf<Date?>(null) }
@@ -75,21 +81,32 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
         timeState.value = training?.dateTime
         reminderState.value = training?.reminderDateTime
 
+        trainingIsCompleted.value = training?.isCompleted
+
         /*val workoutPairs = database.workoutDao().getWorkoutsByTrainingId(trainingId).map { workout ->
             val workoutName = database.workoutNameDao().getWorkoutNameById(workout.workoutNameId) ?: "Неизвестное упражнение"
             workoutName to workout
         }
         workoutsState.value = workoutPairs*/
 
-        val workoutTriples = database.workoutDao().getWorkoutsByTrainingId(trainingId).map { workout ->
-            val workoutName = database.workoutNameDao().getWorkoutNameById(workout.workoutNameId) ?: "Неизвестное упражнение"
-            Triple(workout.workoutId, workoutName, workout)
-        }
+        val workoutTriples =
+            database.workoutDao().getWorkoutsByTrainingId(trainingId).map { workout ->
+                val workoutName =
+                    database.workoutNameDao().getWorkoutNameById(workout.workoutNameId)
+                        ?: "Неизвестное упражнение"
+                Triple(workout.workoutId, workoutName, workout)
+            }
         workoutsState.value = workoutTriples
 
         // Завершаем загрузку
         isLoading.value = false
     }
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val isTrainingCompleted = trainingIsCompleted.value == true
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -106,6 +123,7 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
                 actions = {
                     Button(
                         onClick = { // ДОБАВИТЬ ЛОГИКУ РЕДАКТИРОВАНИЯ КОНКРЕТНОЙ ТРЕНИРОВКИ
+
                             navController.navigate(Routes.CREATE_UPDATE_TRAINING)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BlackColor)
@@ -140,12 +158,36 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { // Добавить логику сохранения в выполненные тренировки
-                    navController.navigate(Routes.TRAINING_LIST)
+                onClick = {
+                    // Устанавливаем локально значение завершения тренировки
+                    val newCompletionStatus = !isTrainingCompleted
+
+                    // Обновляем локально значение завершения тренировки
+                    trainingIsCompleted.value = newCompletionStatus
+                    // Запускаем корутину для сохранения изменения в базе данных
+                    scope.launch {
+                        // Обновляем поле isCompleted для данной тренировки в базе данных
+                        database.trainingDao().updateTrainingCompletionStatus(trainingId, newCompletionStatus)
+
+                        // Отображаем Toast с соответствующим сообщением
+                        val toastMessage = if (newCompletionStatus) {
+                            "Поздравляем с окончанием тренировки!"
+                        } else {
+                            "Тренировка отмечена как не выполненная."
+                        }
+                        Toast.makeText(
+                            context,
+                            toastMessage,
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Переходим к следующему экрану или обновляем UI
+                        navController.navigate(Routes.TRAINING_LIST)
+                    }
                 },
-                icon = { Icon(Icons.Filled.Check, "Выполнена") },
-                text = { Text(text = "Выполнена") },
-                containerColor = GreenColor,
+                icon = { Icon(if (isTrainingCompleted) Icons.Filled.Close else Icons.Filled.Check, "Выполнена") },
+                text = { Text(text = if (isTrainingCompleted) "Не выполнена" else "Выполнена") },
+                containerColor = if (isTrainingCompleted) DeleteButtonColor else GreenColor,
                 contentColor = WhiteColor
             )
         }

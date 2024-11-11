@@ -61,7 +61,7 @@ fun OutlinedCardTitle(
             header = "Время", value = time?.let { formatTime(it) } ?: "-"
         )
         TextComponent(
-            header = "Напоминание", value = SimpleDateFormat("dd.MM.yyyy  |  HH:mm", Locale.getDefault()).format(reminder) // reminder?.let { formatTime(it) } ?: "-"
+            header = "Напоминание", value = reminder?.let { SimpleDateFormat("dd.MM.yyyy  |  HH:mm", Locale.getDefault()).format(it)}  ?: "--"
         )
         Spacer(modifier = Modifier.padding(bottom = 11.dp))
     }
