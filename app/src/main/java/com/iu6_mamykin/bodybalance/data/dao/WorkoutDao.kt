@@ -13,4 +13,8 @@ interface WorkoutDao {
 
     @Delete
     suspend fun delete(workout: Workout)
+
+    @Query("UPDATE Workout SET isCompleted = :isCompleted WHERE workoutId = :workoutId")
+    suspend fun updateWorkoutCompletion(workoutId: Int, isCompleted: Boolean)
+
 }

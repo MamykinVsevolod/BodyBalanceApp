@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -22,6 +24,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -29,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.data.AppDatabase
+import com.iu6_mamykin.bodybalance.data.entities.Workout
 import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.OutlinedCardTitle
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.WorkOutElement
@@ -36,11 +42,54 @@ import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
+import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingProgressScreen(navController: NavController, database: AppDatabase, trainingId: Int) {
+    // Состояния для хранения данных тренировки и упражнений
+    val trainingNameState = remember { mutableStateOf<String?>(null) }
+    val dateState = remember { mutableStateOf<Date?>(null) }
+    val timeState = remember { mutableStateOf<Date?>(null) }
+    val reminderState = remember { mutableStateOf<Date?>(null) }
+    //val workoutsState = remember { mutableStateOf<List<Pair<String, Workout>>>(emptyList()) }
+    val workoutsState = remember { mutableStateOf<List<Triple<Int, String, Workout>>>(emptyList()) }
+
+    val isLoading = remember { mutableStateOf(true) }
+
+    // Загружаем данные асинхронно
+    LaunchedEffect(trainingId) {
+        isLoading.value = true
+
+        // Получаем тренировку по ID
+        val training = database.trainingDao().getTrainingById(trainingId)
+        val trainingNameId = training?.trainingNameId
+        if (trainingNameId != null) {
+            // Получаем название тренировки
+            trainingNameState.value = database.trainingNameDao().getTrainingNameById(trainingNameId)
+        }
+
+        // Получаем дату, время, напоминание и упражнения
+        dateState.value = training?.dateTime
+        timeState.value = training?.dateTime
+        reminderState.value = training?.reminderDateTime
+
+        /*val workoutPairs = database.workoutDao().getWorkoutsByTrainingId(trainingId).map { workout ->
+            val workoutName = database.workoutNameDao().getWorkoutNameById(workout.workoutNameId) ?: "Неизвестное упражнение"
+            workoutName to workout
+        }
+        workoutsState.value = workoutPairs*/
+
+        val workoutTriples = database.workoutDao().getWorkoutsByTrainingId(trainingId).map { workout ->
+            val workoutName = database.workoutNameDao().getWorkoutNameById(workout.workoutNameId) ?: "Неизвестное упражнение"
+            Triple(workout.workoutId, workoutName, workout)
+        }
+        workoutsState.value = workoutTriples
+
+        // Завершаем загрузку
+        isLoading.value = false
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -57,7 +106,8 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
                 actions = {
                     Button(
                         onClick = { // ДОБАВИТЬ ЛОГИКУ РЕДАКТИРОВАНИЯ КОНКРЕТНОЙ ТРЕНИРОВКИ
-                            navController.navigate(Routes.CREATE_UPDATE_TRAINING) },
+                            navController.navigate(Routes.CREATE_UPDATE_TRAINING)
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = BlackColor)
                     ) {
                         Icon(
@@ -109,10 +159,31 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedCardTitle()
-                LazyColumn {
-                    items(20) {
-                        WorkOutElement()
+                if (isLoading.value) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentSize(Alignment.Center)
+                    )
+                } else {
+                    OutlinedCardTitle(
+                        trainingName = trainingNameState.value ?: "Без названия",
+                        date = dateState.value,
+                        time = timeState.value,
+                        reminder = reminderState.value
+                    )
+                    LazyColumn {
+                        items(workoutsState.value.size) { index ->
+                            val (workoutId, workoutName, workout) = workoutsState.value[index]
+
+                            WorkOutElement(
+                                workoutName = workoutName,
+                                note = workout.note ?: "Нет заметок",
+                                isCompleted = workout.isCompleted,
+                                workoutId = workout.workoutId, // Передаем workoutId в WorkOutElement
+                                workoutDao = database.workoutDao()
+                            )
+                        }
                     }
                 }
             }

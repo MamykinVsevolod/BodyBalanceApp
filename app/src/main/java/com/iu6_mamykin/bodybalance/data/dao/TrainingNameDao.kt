@@ -19,4 +19,5 @@ interface TrainingNameDao {
 
     @Query("SELECT trainingNameId FROM TrainingNames WHERE name = :name LIMIT 1")
     suspend fun getTrainingNameIdByName(name: String): Int?
+
 }
