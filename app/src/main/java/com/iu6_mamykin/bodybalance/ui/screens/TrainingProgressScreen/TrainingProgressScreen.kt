@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.OutlinedCardTitle
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.WorkOutElement
@@ -39,7 +40,7 @@ import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingProgressScreen(navController: NavController, trainingId: Int) {
+fun TrainingProgressScreen(navController: NavController, database: AppDatabase, trainingId: Int) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

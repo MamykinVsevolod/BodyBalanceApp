@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.ui.screens.ProfileScreen.components.EditButtonProfile
 import com.iu6_mamykin.bodybalance.ui.screens.ProfileScreen.components.OutlinedCardTitle
 import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
@@ -30,7 +31,7 @@ import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, database: AppDatabase) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

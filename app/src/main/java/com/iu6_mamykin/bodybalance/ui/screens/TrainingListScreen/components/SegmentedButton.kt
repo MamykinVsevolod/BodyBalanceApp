@@ -8,7 +8,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -16,8 +16,8 @@ import com.iu6_mamykin.bodybalance.ui.theme.OutlinedColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SegmentedButton() {
-    var selectedIndex by remember { mutableIntStateOf(0) }
+fun SegmentedButton(isCompleted: Boolean, onStatusChange: (Boolean) -> Unit) {
+    var selectedIndex by remember { mutableStateOf(if (isCompleted) 1 else 0) }
     val options = listOf("Новые", "Выполненные")
     SingleChoiceSegmentedButtonRow {
         options.forEachIndexed { index, label ->
@@ -26,7 +26,8 @@ fun SegmentedButton() {
                     index = index,
                     count = options.size
                 ),
-                colors = SegmentedButtonColors(activeContainerColor = Color(0xFF474747),
+                colors = SegmentedButtonColors(
+                    activeContainerColor = Color(0xFF474747),
                     activeContentColor = Color(0xFFE2E2E2),
                     activeBorderColor = Color(0xFF919191),
                     inactiveContainerColor = Color(0xFFFAF8FF),
@@ -40,7 +41,10 @@ fun SegmentedButton() {
                     disabledInactiveContentColor = Color(0xFFE2E2E2),
                     disabledInactiveBorderColor = Color(0xFF919191)
                 ),
-                onClick = { selectedIndex = index },
+                onClick = {
+                    selectedIndex = index
+                    onStatusChange(index == 1)
+                },
                 selected = index == selectedIndex
             ) {
                 Text(label)

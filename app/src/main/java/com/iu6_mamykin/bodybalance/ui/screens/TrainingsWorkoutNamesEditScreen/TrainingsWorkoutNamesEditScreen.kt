@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingsWorkoutNamesEditScreen.components.OutlinedCardTrainings
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingsWorkoutNamesEditScreen.components.OutlinedCardWorkout
@@ -34,7 +35,7 @@ import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainingsWorkoutNamesEditScreen(navController: NavController, trainings: Boolean) {
+fun TrainingsWorkoutNamesEditScreen(navController: NavController, database: AppDatabase, trainings: Boolean) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

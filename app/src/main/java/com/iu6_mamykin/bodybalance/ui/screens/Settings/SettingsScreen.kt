@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.ui.screens.Settings.components.OutlinedCardTrainingsSettings
 import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
@@ -27,7 +28,7 @@ import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, database: AppDatabase) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

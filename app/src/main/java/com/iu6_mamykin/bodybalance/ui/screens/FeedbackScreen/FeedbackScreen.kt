@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.ButtonSend
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.CustomAlertDialog
 import com.iu6_mamykin.bodybalance.ui.screens.FeedbackScreen.components.Fields
@@ -33,7 +34,7 @@ import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedbackScreen(navController: NavController) {
+fun FeedbackScreen(navController: NavController, database: AppDatabase) {
     val context = LocalContext.current
     var openAlertDialog by remember { mutableStateOf(false) }
     var mutableSubject by remember { mutableStateOf(" ") }
