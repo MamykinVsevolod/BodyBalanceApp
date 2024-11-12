@@ -20,7 +20,7 @@ fun AppNavHost(navController: NavHostController, database: AppDatabase) {
         navController = navController,
         startDestination = Routes.TRAINING_LIST
     ) {
-        composable(Routes.CREATE_UPDATE_TRAINING) { CreateUpdateTrainingScreen(navController, database) }
+        //composable(Routes.CREATE_UPDATE_TRAINING) { CreateUpdateTrainingScreen(navController, database) }
         composable(Routes.FEEDBACK) { FeedbackScreen(navController, database) }
         composable(Routes.PROFILE_EDIT) { ProfileEditScreen(navController, database) }
         composable(Routes.PROFILE) { ProfileScreen(navController, database) }
@@ -40,6 +40,13 @@ fun AppNavHost(navController: NavHostController, database: AppDatabase) {
             val isTraining = backStackEntry.arguments?.getString("isTraining")?.toBoolean() ?: false
             if (isTraining != null) {
                 TrainingsWorkoutNamesEditScreen(navController, database, isTraining)
+            }
+        }
+
+        composable(Routes.CREATE_UPDATE_TRAINING) { backStackEntry ->
+            val trainingId = backStackEntry.arguments?.getString("trainingId")?.toIntOrNull()
+            if (trainingId != null) {
+                CreateUpdateTrainingScreen(navController, database, trainingId)
             }
         }
     }

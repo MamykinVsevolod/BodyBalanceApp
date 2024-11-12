@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -77,9 +79,13 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateUpdateTrainingScreen(navController: NavController, database: AppDatabase) {
+fun CreateUpdateTrainingScreen(
+    navController: NavController,
+    database: AppDatabase,
+    trainingId: Int = -1
+) {
     val context = LocalContext.current
-
+    val isLoading = remember { mutableStateOf(true) }
     // для НАЗВАНИЯ
     var mutableTitle by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
@@ -91,19 +97,40 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
     val options = trainingNames.value
     val filteredOptions = options.filter { it.contains(mutableTitle, ignoreCase = true) }
 
+    /*// для ДАТЫ
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    var selectedDate by remember { mutableStateOf(" ") }
+    selectedDate = datePickerState.selectedDateMillis?.let {
+        convertMillisToDate(it)
+    } ?: " "*/
     // для ДАТЫ
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-    val selectedDate = datePickerState.selectedDateMillis?.let {
+    var selectedDate by remember { mutableStateOf(" ") }  // Используем remember для состояния даты
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        selectedDate = datePickerState.selectedDateMillis?.let {
+            convertMillisToDate(it)
+        } ?: " "  // Обновляем дату при изменении selectedDateMillis
+    }
+
+    /*// для даты НАПОМИНАНИЯ
+    var showDateNotifyPicker by remember { mutableStateOf(false) }
+    val datePickerNotifyState = rememberDatePickerState()
+    var selectedNotifyDate by remember { mutableStateOf(" ") }
+    selectedNotifyDate = datePickerNotifyState.selectedDateMillis?.let {
         convertMillisToDate(it)
-    } ?: " "
+    } ?: " "*/
 
     // для даты НАПОМИНАНИЯ
     var showDateNotifyPicker by remember { mutableStateOf(false) }
     val datePickerNotifyState = rememberDatePickerState()
-    val selectedNotifyDate = datePickerNotifyState.selectedDateMillis?.let {
-        convertMillisToDate(it)
-    } ?: " "
+    var selectedNotifyDate by remember { mutableStateOf(" ") }  // Используем remember для состояния даты напоминания
+    LaunchedEffect(datePickerNotifyState.selectedDateMillis) {
+        selectedNotifyDate = datePickerNotifyState.selectedDateMillis?.let {
+            convertMillisToDate(it)
+        } ?: " "  // Обновляем дату напоминания при изменении selectedDateMillis
+    }
 
     // для ВРЕМЕНИ
     var showTimePicker by remember { mutableStateOf(false) }
@@ -135,8 +162,44 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
         // Заполняем workOutOptions только названиями упражнений
         workOutOptions = workoutNamesList.map { it.name }
     }
-
     val coroutineScope = rememberCoroutineScope()
+    // Проверка trainingId для загрузки данных тренировки
+    LaunchedEffect(trainingId) {
+        if (trainingId >= 0) {
+            isLoading.value = true
+            // Получаем данные тренировки
+            val training = database.trainingDao().getTrainingById(trainingId)
+
+            training?.let {
+                // Получаем название тренировки из TrainingNames
+                val trainingName = database.trainingNameDao().getTrainingNameById(it.trainingNameId)
+                mutableTitle = trainingName ?: ""  // Если null, оставляем пустую строку
+                Log.d("Date", it.dateTime.time.toString())
+                // Устанавливаем дату и время тренировки
+                selectedDate = convertMillisToDate(it.dateTime.time)
+                Log.d("Date", selectedDate)
+                selectedTime = convertMillisToTime(it.dateTime.time)
+
+                // Проверяем и устанавливаем дату и время напоминания, если оно есть
+                it.reminderDateTime?.let { reminderDateTime ->
+                    selectedNotifyDate = convertMillisToDate(reminderDateTime.time)
+                    selectedNotifyTime = convertMillisToTime(reminderDateTime.time)
+                    checked = true  // Включаем напоминание
+                }
+
+                // Загружаем все упражнения, связанные с тренировкой
+                val workouts = database.workoutDao().getWorkoutsByTrainingId(trainingId)
+                workOutElements = workouts.map { workout ->
+                    // Получаем имя упражнения
+                    val workoutName =
+                        database.workoutNameDao().getWorkoutNameById(workout.workoutNameId)
+                    Pair(workoutName ?: "", workout.note ?: "")
+                }
+            }
+            isLoading.value = false
+        }
+    }
+
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = {},
@@ -194,314 +257,40 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                item {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = if (mutableTitle.isEmpty()) " " else mutableTitle,
-                            onValueChange = {
-                                mutableTitle = it
-                                expanded = true  // раскрываем меню при вводе
-                            },
-                            label = { Text("Название") },
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.dropdown_icon),
-                                    contentDescription = "Dropdown Arrow",
-                                    Modifier.clickable {
-                                        expanded = true
-                                    }  // раскрываем меню при нажатии на стрелку
-                                )
-                            },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = BlackColor,
-                                focusedLabelColor = BlackColor
-                            ),
-                            singleLine = true,
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            filteredOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        mutableTitle = option  // подставляем выбранный текст в поле
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-                item {
-                    OutlinedTextField(
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                        ),
-                        value = selectedDate,
-                        singleLine = true,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("Дата") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
-                        trailingIcon = {
-                            Icon(painter = painterResource(id = R.drawable.calendar_icon),
-                                contentDescription = "Выбор даты",
-                                modifier = Modifier
-                                    .clickable {
-                                        showDatePicker = !showDatePicker
-                                    }
-                                    .padding(12.dp))
-                        }
-                    )
-                    if (showDatePicker) {
-                        DatePickerDialog(onDismissRequest = { showDatePicker = !showDatePicker },
-                            confirmButton = {
-                                TextButton(onClick = { showDatePicker = !showDatePicker }) {
-                                    Text("OK")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showDatePicker = !showDatePicker }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        ) {
-                            DatePicker(state = datePickerState)
-                        }
-                    }
-                }
-                item {
-                    OutlinedTextField(colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                    ),
-                        value = selectedTime,
-                        singleLine = true,
-                        onValueChange = { /*mutableTime = it*/ },
-                        label = { Text("Время") },
-                        readOnly = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
-                        trailingIcon = {
-                            Icon(painter = painterResource(id = R.drawable.clock_icon),
-                                contentDescription = "Выбор времени",
-                                modifier = Modifier
-                                    .clickable {
-                                        showTimePicker = !showTimePicker
-                                    }
-                                    .padding(12.dp))
-                        }
-                    )
-                    if (showTimePicker) {
-                        AlertDialog(title = {
-                            Text(
-                                text = "Выбрать время",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
-                            text = { TimePicker(state = timePickerState) },
-                            onDismissRequest = { showTimePicker = !showTimePicker },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    val hours = timePickerState.hour
-                                    val minutes = timePickerState.minute
-
-                                    selectedTime = String.format("%02d:%02d", hours, minutes)
-                                    showTimePicker = !showTimePicker
-                                }) {
-                                    Text("OK")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showTimePicker = !showTimePicker }) {
-                                    Text("Отмена")
-                                }
-                            }
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Switch(
-                            checked = checked, onCheckedChange = {
-                                checked = it
-                            }, colors = SwitchDefaults.colors(
-                                checkedTrackColor = BlackColor
-                            )
-                        )
-                        Spacer(modifier = Modifier.size(9.dp))
-                        AssistChip(
-                            onClick = { },
-                            label = { Text("Напоминание") },
-                        )
-                    }
-                    if (checked) {
-                        OutlinedTextField(
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                            ),
-                            value = selectedNotifyDate,
-                            singleLine = true,
-                            onValueChange = { },
-                            readOnly = true,
-                            label = { Text("Дата") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
-                            trailingIcon = {
-                                Icon(painter = painterResource(id = R.drawable.calendar_icon),
-                                    contentDescription = "Выбор даты",
-                                    modifier = Modifier
-                                        .clickable {
-                                            showDateNotifyPicker = !showDateNotifyPicker
-                                        }
-                                        .padding(12.dp))
-                            }
-                        )
-                        if (showDateNotifyPicker) {
-                            DatePickerDialog(onDismissRequest = {
-                                showDateNotifyPicker = !showDateNotifyPicker
-                            },
-                                confirmButton = {
-                                    TextButton(onClick = {
-                                        showDateNotifyPicker = !showDateNotifyPicker
-                                    }) {
-                                        Text("OK")
-                                    }
-                                },
-                                dismissButton = {
-                                    TextButton(onClick = {
-                                        showDateNotifyPicker = !showDateNotifyPicker
-                                    }) {
-                                        Text("Cancel")
-                                    }
-                                }
-                            ) {
-                                DatePicker(state = datePickerNotifyState)
-                            }
-                        }
-                        OutlinedTextField(colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                        ),
-                            value = selectedNotifyTime,
-                            singleLine = true,
-                            onValueChange = { /*mutableTime = it*/ },
-                            label = { Text("Время") },
-                            readOnly = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
-                            trailingIcon = {
-                                Icon(painter = painterResource(id = R.drawable.clock_icon),
-                                    contentDescription = "Выбор времени",
-                                    modifier = Modifier
-                                        .clickable {
-                                            showTimeNotifyPicker = !showTimeNotifyPicker
-                                        }
-                                        .padding(12.dp))
-                            }
-                        )
-                        if (showTimeNotifyPicker) {
-                            AlertDialog(title = {
-                                Text(
-                                    text = "Выбрать время",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            },
-                                text = { TimePicker(state = timePickerNotifyState) },
-                                onDismissRequest = { showTimeNotifyPicker = !showTimeNotifyPicker },
-                                confirmButton = {
-                                    TextButton(onClick = {
-                                        val hours = timePickerNotifyState.hour
-                                        val minutes = timePickerNotifyState.minute
-
-                                        selectedNotifyTime =
-                                            String.format("%02d:%02d", hours, minutes)
-                                        showTimeNotifyPicker = !showTimeNotifyPicker
-                                    }) {
-                                        Text("OK")
-                                    }
-                                },
-                                dismissButton = {
-                                    TextButton(onClick = {
-                                        showTimeNotifyPicker = !showTimeNotifyPicker
-                                    }) {
-                                        Text("Отмена")
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-                item {
-                    HorizontalDivider(modifier = Modifier.padding(start = 20.dp, end = 20.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(text = "Упражнения", fontSize = 20.sp)
-                    }
-                }
-                items(workOutElements.size) { index ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        var expandedWorkOut by remember { mutableStateOf(false) }
-                        val filteredOptionsWorkOut = workOutOptions.filter {
-                            it.contains(
-                                workOutElements[index].first,
-                                ignoreCase = true
-                            )
-                        }
-
+            if (isLoading.value) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
+                    item {
                         ExposedDropdownMenuBox(
-                            expanded = expandedWorkOut,
-                            onExpandedChange = { expandedWorkOut = !expandedWorkOut },
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded },
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 12.dp, end = 12.dp, bottom = 5.dp)
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp)
                         ) {
                             OutlinedTextField(
-                                value = workOutElements[index].first,
-                                onValueChange = { newName ->
-                                    workOutElements = workOutElements.toMutableList().also {
-                                        it[index] = it[index].copy(first = newName)
-                                    }
-                                    expandedWorkOut = true  // открываем меню при вводе
+                                value = if (mutableTitle.isEmpty()) " " else mutableTitle,
+                                onValueChange = {
+                                    mutableTitle = it
+                                    expanded = true  // раскрываем меню при вводе
                                 },
                                 label = { Text("Название") },
                                 trailingIcon = {
                                     Icon(
                                         painter = painterResource(id = R.drawable.dropdown_icon),
                                         contentDescription = "Dropdown Arrow",
-                                        Modifier.clickable { expandedWorkOut = true }
+                                        Modifier.clickable {
+                                            expanded = true
+                                        }  // раскрываем меню при нажатии на стрелку
                                     )
                                 },
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -515,58 +304,346 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
                             )
 
                             ExposedDropdownMenu(
-                                expanded = expandedWorkOut,
-                                onDismissRequest = { expandedWorkOut = false },
-                                modifier = Modifier.fillMaxWidth()
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
                             ) {
-                                filteredOptionsWorkOut.forEach { workOutOptions ->
+                                filteredOptions.forEach { option ->
                                     DropdownMenuItem(
-                                        text = { Text(workOutOptions, fontSize = 16.sp) },
+                                        text = { Text(option) },
                                         onClick = {
-                                            workOutElements = workOutElements.toMutableList().also {
-                                                it[index] = it[index].copy(first = workOutOptions)
-                                            }
-                                            expandedWorkOut = false
+                                            mutableTitle =
+                                                option  // подставляем выбранный текст в поле
+                                            expanded = false
                                         }
                                     )
                                 }
                             }
                         }
-
-                        IconButton(
-                            onClick = {
-                                workOutElements = workOutElements.toMutableList().also {
-                                    it.removeAt(index)
-                                }
-                            },
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = DeleteButtonColor,
-                                contentColor = WhiteColor
+                    }
+                    item {
+                        OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
                             ),
-                            modifier = Modifier.padding(end = 12.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.delete_button_second),
-                                contentDescription = "Удалить"
+                            value = selectedDate,
+                            singleLine = true,
+                            onValueChange = { },
+                            readOnly = true,
+                            label = { Text("Дата") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                            trailingIcon = {
+                                Icon(painter = painterResource(id = R.drawable.calendar_icon),
+                                    contentDescription = "Выбор даты",
+                                    modifier = Modifier
+                                        .clickable {
+                                            showDatePicker = !showDatePicker
+                                        }
+                                        .padding(12.dp))
+                            }
+                        )
+                        if (showDatePicker) {
+                            DatePickerDialog(onDismissRequest = {
+                                showDatePicker = !showDatePicker
+                            },
+                                confirmButton = {
+                                    TextButton(onClick = { showDatePicker = !showDatePicker }) {
+                                        Text("OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDatePicker = !showDatePicker }) {
+                                        Text("Cancel")
+                                    }
+                                }
+                            ) {
+                                DatePicker(state = datePickerState)
+                            }
+                        }
+                    }
+                    item {
+                        OutlinedTextField(colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                        ),
+                            value = selectedTime,
+                            singleLine = true,
+                            onValueChange = { /*mutableTime = it*/ },
+                            label = { Text("Время") },
+                            readOnly = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                            trailingIcon = {
+                                Icon(painter = painterResource(id = R.drawable.clock_icon),
+                                    contentDescription = "Выбор времени",
+                                    modifier = Modifier
+                                        .clickable {
+                                            showTimePicker = !showTimePicker
+                                        }
+                                        .padding(12.dp))
+                            }
+                        )
+                        if (showTimePicker) {
+                            AlertDialog(title = {
+                                Text(
+                                    text = "Выбрать время",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                                text = { TimePicker(state = timePickerState) },
+                                onDismissRequest = { showTimePicker = !showTimePicker },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        val hours = timePickerState.hour
+                                        val minutes = timePickerState.minute
+
+                                        selectedTime = String.format("%02d:%02d", hours, minutes)
+                                        showTimePicker = !showTimePicker
+                                    }) {
+                                        Text("OK")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showTimePicker = !showTimePicker }) {
+                                        Text("Отмена")
+                                    }
+                                }
                             )
                         }
                     }
-                    OutlinedTextField(
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
-                        ),
-                        value = workOutElements[index].second,
-                        onValueChange = { newNote ->
-                            workOutElements = workOutElements.toMutableList().also {
-                                it[index] = it[index].copy(second = newNote)
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Switch(
+                                checked = checked, onCheckedChange = {
+                                    checked = it
+                                }, colors = SwitchDefaults.colors(
+                                    checkedTrackColor = BlackColor
+                                )
+                            )
+                            Spacer(modifier = Modifier.size(9.dp))
+                            AssistChip(
+                                onClick = { },
+                                label = { Text("Напоминание") },
+                            )
+                        }
+                        if (checked) {
+                            OutlinedTextField(
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                                ),
+                                value = selectedNotifyDate,
+                                singleLine = true,
+                                onValueChange = { },
+                                readOnly = true,
+                                label = { Text("Дата") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                                trailingIcon = {
+                                    Icon(painter = painterResource(id = R.drawable.calendar_icon),
+                                        contentDescription = "Выбор даты",
+                                        modifier = Modifier
+                                            .clickable {
+                                                showDateNotifyPicker = !showDateNotifyPicker
+                                            }
+                                            .padding(12.dp))
+                                }
+                            )
+                            if (showDateNotifyPicker) {
+                                DatePickerDialog(onDismissRequest = {
+                                    showDateNotifyPicker = !showDateNotifyPicker
+                                },
+                                    confirmButton = {
+                                        TextButton(onClick = {
+                                            showDateNotifyPicker = !showDateNotifyPicker
+                                        }) {
+                                            Text("OK")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = {
+                                            showDateNotifyPicker = !showDateNotifyPicker
+                                        }) {
+                                            Text("Cancel")
+                                        }
+                                    }
+                                ) {
+                                    DatePicker(state = datePickerNotifyState)
+                                }
                             }
-                        },
-                        label = { Text("Заметки") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(94.dp)
-                            .padding(start = 12.dp, end = 12.dp)
-                    )
+                            OutlinedTextField(colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                            ),
+                                value = selectedNotifyTime,
+                                singleLine = true,
+                                onValueChange = { /*mutableTime = it*/ },
+                                label = { Text("Время") },
+                                readOnly = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 12.dp, end = 12.dp, bottom = 15.dp),
+                                trailingIcon = {
+                                    Icon(painter = painterResource(id = R.drawable.clock_icon),
+                                        contentDescription = "Выбор времени",
+                                        modifier = Modifier
+                                            .clickable {
+                                                showTimeNotifyPicker = !showTimeNotifyPicker
+                                            }
+                                            .padding(12.dp))
+                                }
+                            )
+                            if (showTimeNotifyPicker) {
+                                AlertDialog(title = {
+                                    Text(
+                                        text = "Выбрать время",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                },
+                                    text = { TimePicker(state = timePickerNotifyState) },
+                                    onDismissRequest = {
+                                        showTimeNotifyPicker = !showTimeNotifyPicker
+                                    },
+                                    confirmButton = {
+                                        TextButton(onClick = {
+                                            val hours = timePickerNotifyState.hour
+                                            val minutes = timePickerNotifyState.minute
+
+                                            selectedNotifyTime =
+                                                String.format("%02d:%02d", hours, minutes)
+                                            showTimeNotifyPicker = !showTimeNotifyPicker
+                                        }) {
+                                            Text("OK")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = {
+                                            showTimeNotifyPicker = !showTimeNotifyPicker
+                                        }) {
+                                            Text("Отмена")
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    item {
+                        HorizontalDivider(modifier = Modifier.padding(start = 20.dp, end = 20.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text(text = "Упражнения", fontSize = 20.sp)
+                        }
+                    }
+                    items(workOutElements.size) { index ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            var expandedWorkOut by remember { mutableStateOf(false) }
+                            val filteredOptionsWorkOut = workOutOptions.filter {
+                                it.contains(
+                                    workOutElements[index].first,
+                                    ignoreCase = true
+                                )
+                            }
+
+                            ExposedDropdownMenuBox(
+                                expanded = expandedWorkOut,
+                                onExpandedChange = { expandedWorkOut = !expandedWorkOut },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 12.dp, end = 12.dp, bottom = 5.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = workOutElements[index].first,
+                                    onValueChange = { newName ->
+                                        workOutElements = workOutElements.toMutableList().also {
+                                            it[index] = it[index].copy(first = newName)
+                                        }
+                                        expandedWorkOut = true  // открываем меню при вводе
+                                    },
+                                    label = { Text("Название") },
+                                    trailingIcon = {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.dropdown_icon),
+                                            contentDescription = "Dropdown Arrow",
+                                            Modifier.clickable { expandedWorkOut = true }
+                                        )
+                                    },
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = BlackColor,
+                                        focusedLabelColor = BlackColor
+                                    ),
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .menuAnchor()
+                                        .fillMaxWidth()
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = expandedWorkOut,
+                                    onDismissRequest = { expandedWorkOut = false },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    filteredOptionsWorkOut.forEach { workOutOptions ->
+                                        DropdownMenuItem(
+                                            text = { Text(workOutOptions, fontSize = 16.sp) },
+                                            onClick = {
+                                                workOutElements =
+                                                    workOutElements.toMutableList().also {
+                                                        it[index] =
+                                                            it[index].copy(first = workOutOptions)
+                                                    }
+                                                expandedWorkOut = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    workOutElements = workOutElements.toMutableList().also {
+                                        it.removeAt(index)
+                                    }
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = DeleteButtonColor,
+                                    contentColor = WhiteColor
+                                ),
+                                modifier = Modifier.padding(end = 12.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.delete_button_second),
+                                    contentDescription = "Удалить"
+                                )
+                            }
+                        }
+                        OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BlackColor, focusedLabelColor = BlackColor
+                            ),
+                            value = workOutElements[index].second,
+                            onValueChange = { newNote ->
+                                workOutElements = workOutElements.toMutableList().also {
+                                    it[index] = it[index].copy(second = newNote)
+                                }
+                            },
+                            label = { Text("Заметки") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(94.dp)
+                                .padding(start = 12.dp, end = 12.dp)
+                        )
+                    }
                 }
             }
         }
@@ -586,6 +663,15 @@ fun CreateUpdateTrainingScreenPreview() {
 fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
+}
+
+fun convertMillisToTime(millis: Long): String {
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = millis
+    }
+    val hours = calendar.get(Calendar.HOUR_OF_DAY)
+    val minutes = calendar.get(Calendar.MINUTE)
+    return String.format("%02d:%02d", hours, minutes)
 }
 
 

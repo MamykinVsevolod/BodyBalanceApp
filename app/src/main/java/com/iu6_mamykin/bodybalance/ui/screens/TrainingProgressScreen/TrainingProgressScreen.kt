@@ -123,8 +123,7 @@ fun TrainingProgressScreen(navController: NavController, database: AppDatabase, 
                 actions = {
                     Button(
                         onClick = { // ДОБАВИТЬ ЛОГИКУ РЕДАКТИРОВАНИЯ КОНКРЕТНОЙ ТРЕНИРОВКИ
-
-                            navController.navigate(Routes.CREATE_UPDATE_TRAINING)
+                            navController.navigate(Routes.createUpdateTrainingWithArgs(trainingId.toString()))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BlackColor)
                     ) {

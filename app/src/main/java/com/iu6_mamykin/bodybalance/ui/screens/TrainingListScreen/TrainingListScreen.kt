@@ -73,7 +73,7 @@ fun TrainingListScreen(navController: NavController, database: AppDatabase) {
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { navController.navigate(Routes.CREATE_UPDATE_TRAINING) },
+                onClick = { navController.navigate(Routes.createUpdateTrainingWithArgs((-1).toString())) },
                 icon = {
                     Icon(
                         painterResource(R.drawable.add_icon), contentDescription = "Добавить"
