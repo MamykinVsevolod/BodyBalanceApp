@@ -81,7 +81,7 @@ fun OutlinedCardTitle(user: User?) {
         horizontalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.avatar_icon),
+            painter = painterResource(id = R.drawable.female_icon),
             contentDescription = "Фото профиля",
             contentScale = ContentScale.Crop,
             modifier = Modifier
