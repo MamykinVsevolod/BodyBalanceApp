@@ -18,9 +18,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun OutlinedCardTitle() {
+fun OutlinedCardTitle(
+    trainingName: String,
+    date: Date?,
+    time: Date?,
+    reminder: Date?
+) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -38,7 +46,7 @@ fun OutlinedCardTitle() {
             verticalAlignment = Alignment.Top
         ) {
             Text(
-                text = "Моя в зале",
+                text = trainingName,
                 modifier = Modifier
                     .padding(top = 7.dp, bottom = 11.dp),
                 textAlign = TextAlign.Center,
@@ -47,14 +55,25 @@ fun OutlinedCardTitle() {
             )
         }
         TextComponent(
-            header = "Дата", value = "01.11.2024"
+            header = "Дата", value = date?.let { formatDate(it) } ?: "-"
         )
         TextComponent(
-            header = "Время", value = "08:00"
+            header = "Время", value = time?.let { formatTime(it) } ?: "-"
         )
         TextComponent(
-            header = "Напоминание", value = "-"
+            header = "Напоминание", value = reminder?.let { SimpleDateFormat("dd.MM.yyyy  |  HH:mm", Locale.getDefault()).format(it)}  ?: "--"
         )
         Spacer(modifier = Modifier.padding(bottom = 11.dp))
     }
+}
+
+// Функции форматирования для даты и времени
+fun formatDate(date: Date): String {
+    val format = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    return format.format(date)
+}
+
+fun formatTime(date: Date): String {
+    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return format.format(date)
 }

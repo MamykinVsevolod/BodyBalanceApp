@@ -25,10 +25,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.iu6_mamykin.bodybalance.R
+import com.iu6_mamykin.bodybalance.data.Gender
+import com.iu6_mamykin.bodybalance.data.entities.User
 import com.iu6_mamykin.bodybalance.ui.screens.TrainingProgressScreen.components.TextComponent
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun OutlinedCardTitle() {
+fun OutlinedCardTitle(user: User?) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -46,7 +50,7 @@ fun OutlinedCardTitle() {
             verticalAlignment = Alignment.Top
         ) {
             Text(
-                text = "Дарья",
+                text = user?.name ?: "-",
                 modifier = Modifier
                     .padding(top = 40.dp, bottom = 11.dp),
                 textAlign = TextAlign.Center,
@@ -55,13 +59,20 @@ fun OutlinedCardTitle() {
             )
         }
         TextComponent(
-            header = "Почта", value = "darya.thebest@gmail.com"
+            header = "Почта", value = user?.email ?: "-"
         )
         TextComponent(
-            header = "Пол", value = "Женский"
+            header = "Пол", value = when (user?.gender) {
+                Gender.FEMALE -> "Женский"
+                Gender.MALE -> "Мужской"
+                else -> "-"  // Заглушка, если пол не указан
+            }
         )
+        val birthDateText = user?.birthDate?.let {
+            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
+        } ?: "-"
         TextComponent(
-            header = "Дата рождения", value = "30.04.2024"
+            header = "Дата рождения", value = birthDateText
         )
         Spacer(modifier = Modifier.padding(bottom = 11.dp))
     }
@@ -70,7 +81,7 @@ fun OutlinedCardTitle() {
         horizontalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.avatar_icon),
+            painter = painterResource(id = R.drawable.female_icon),
             contentDescription = "Фото профиля",
             contentScale = ContentScale.Crop,
             modifier = Modifier
