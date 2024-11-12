@@ -62,10 +62,17 @@ fun OutlinedCardTitle(user: User?) {
             header = "Почта", value = user?.email ?: "-"
         )
         TextComponent(
-            header = "Пол", value = if (user?.gender == Gender.FEMALE) "Женский" else "Мужской"
+            header = "Пол", value = when (user?.gender) {
+                Gender.FEMALE -> "Женский"
+                Gender.MALE -> "Мужской"
+                else -> "-"  // Заглушка, если пол не указан
+            }
         )
+        val birthDateText = user?.birthDate?.let {
+            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
+        } ?: "-"
         TextComponent(
-            header = "Дата рождения", value = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(user?.birthDate)
+            header = "Дата рождения", value = birthDateText
         )
         Spacer(modifier = Modifier.padding(bottom = 11.dp))
     }

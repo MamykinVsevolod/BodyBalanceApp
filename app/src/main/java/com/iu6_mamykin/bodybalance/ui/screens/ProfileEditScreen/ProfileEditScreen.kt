@@ -69,7 +69,7 @@ fun ProfileEditScreen(navController: NavController, database: AppDatabase) {
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-    var selectedDate by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(" ") }
     var selectedGender by remember { mutableStateOf(0) }
 
     val scope = rememberCoroutineScope()
