@@ -50,6 +50,7 @@ import com.iu6_mamykin.bodybalance.data.Gender
 import com.iu6_mamykin.bodybalance.data.entities.User
 import com.iu6_mamykin.bodybalance.navigation.MyNavigationBar
 import com.iu6_mamykin.bodybalance.navigation.Routes
+import com.iu6_mamykin.bodybalance.ui.screens.CreateUpdateTrainingScreen.convertMillisToDate
 import com.iu6_mamykin.bodybalance.ui.theme.BlackColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
@@ -70,6 +71,11 @@ fun ProfileEditScreen(navController: NavController, database: AppDatabase) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var selectedDate by remember { mutableStateOf(" ") }
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        selectedDate = datePickerState.selectedDateMillis?.let {
+            convertMillisToDate(it)
+        } ?: " "  // Обновляем дату при изменении selectedDateMillis
+    }
     var selectedGender by remember { mutableStateOf(0) }
 
     val scope = rememberCoroutineScope()
