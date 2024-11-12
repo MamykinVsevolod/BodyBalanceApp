@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun OutlinedCardTrainings(modifier: Modifier = Modifier) {
+fun OutlinedCardTrainings(text: String, modifier: Modifier = Modifier) {
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -25,7 +25,7 @@ fun OutlinedCardTrainings(modifier: Modifier = Modifier) {
         modifier = modifier
     ) {
             Text(
-                text = "Моя в зале",
+                text = text,
                 modifier = Modifier
                     .padding(top = 28.dp, start = 16.dp, bottom = 28.dp),
                 textAlign = TextAlign.Center,
