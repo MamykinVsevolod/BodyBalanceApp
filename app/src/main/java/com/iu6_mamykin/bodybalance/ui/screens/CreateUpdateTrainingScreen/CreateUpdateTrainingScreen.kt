@@ -70,8 +70,10 @@ import com.iu6_mamykin.bodybalance.ui.theme.DeleteButtonColor
 import com.iu6_mamykin.bodybalance.ui.theme.GreenColor
 import com.iu6_mamykin.bodybalance.ui.theme.WhiteColor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -85,7 +87,7 @@ fun CreateUpdateTrainingScreen(
     trainingId: Int = -1
 ) {
     val context = LocalContext.current
-    val isLoading = remember { mutableStateOf(true) }
+    val isLoading = remember { mutableStateOf(false) }
     // для НАЗВАНИЯ
     var mutableTitle by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
@@ -97,13 +99,6 @@ fun CreateUpdateTrainingScreen(
     val options = trainingNames.value
     val filteredOptions = options.filter { it.contains(mutableTitle, ignoreCase = true) }
 
-    /*// для ДАТЫ
-    var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
-    var selectedDate by remember { mutableStateOf(" ") }
-    selectedDate = datePickerState.selectedDateMillis?.let {
-        convertMillisToDate(it)
-    } ?: " "*/
     // для ДАТЫ
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -113,14 +108,6 @@ fun CreateUpdateTrainingScreen(
             convertMillisToDate(it)
         } ?: " "  // Обновляем дату при изменении selectedDateMillis
     }
-
-    /*// для даты НАПОМИНАНИЯ
-    var showDateNotifyPicker by remember { mutableStateOf(false) }
-    val datePickerNotifyState = rememberDatePickerState()
-    var selectedNotifyDate by remember { mutableStateOf(" ") }
-    selectedNotifyDate = datePickerNotifyState.selectedDateMillis?.let {
-        convertMillisToDate(it)
-    } ?: " "*/
 
     // для даты НАПОМИНАНИЯ
     var showDateNotifyPicker by remember { mutableStateOf(false) }
@@ -199,7 +186,7 @@ fun CreateUpdateTrainingScreen(
             isLoading.value = false
         }
     }
-
+    Log.d("SaveData", trainingId.toString())
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = {},
@@ -216,17 +203,38 @@ fun CreateUpdateTrainingScreen(
                         Log.d("SaveButton", "Button clicked")
                         coroutineScope.launch {
                             Log.d("SaveButton", "Calling onSaveButtonClicked")
-                            onSaveButtonClicked(
-                                mutableTitle,
-                                datePickerState.selectedDateMillis,
-                                selectedTime,
-                                checked,
-                                datePickerNotifyState.selectedDateMillis,
-                                selectedNotifyTime,
-                                workOutElements,
-                                database,
-                                context
-                            )
+
+                            // Если trainingId >= 0, это процесс редактирования
+                            if (trainingId >= 0) {
+                                // Удаление всех старых данных, связанных с этой тренировкой
+                                deleteOldTrainingData(trainingId, database)
+
+                                // Сохранение новой тренировки с новыми упражнениями
+                                onSaveButtonClicked(
+                                    mutableTitle,
+                                    convertDateToMillis(selectedDate),
+                                    selectedTime,
+                                    checked,
+                                    convertDateToMillis(selectedNotifyDate),
+                                    selectedNotifyTime,
+                                    workOutElements,
+                                    database,
+                                    context
+                                )
+                            } else {
+                                // Если trainingId < 0, значит создаём новую тренировку
+                                onSaveButtonClicked(
+                                    mutableTitle,
+                                    datePickerState.selectedDateMillis,
+                                    selectedTime,
+                                    checked,
+                                    datePickerNotifyState.selectedDateMillis,
+                                    selectedNotifyTime,
+                                    workOutElements,
+                                    database,
+                                    context
+                                )
+                            }
                             navController.navigate(Routes.TRAINING_LIST)
                         }
 
@@ -611,6 +619,26 @@ fun CreateUpdateTrainingScreen(
 
                             IconButton(
                                 onClick = {
+                                    if (trainingId >= 0) {
+                                        coroutineScope.launch {
+                                            // Получаем workoutNameId из таблицы WorkoutNames по названию
+                                            val workoutNameId = database.workoutNameDao().getWorkoutNameIdByName(workOutElements[index].first)
+
+                                            // Получаем заметку из элемента списка
+                                            val note = workOutElements[index].second
+
+                                            // Если найден workoutNameId, продолжаем искать и удалять
+                                            workoutNameId?.let {
+                                                // Получаем все упражнения с данным workoutNameId и заметкой
+                                                val workoutsToDelete = database.workoutDao().getWorkoutsByNameAndNote(workoutNameId, note)
+
+                                                // Удаляем все найденные записи
+                                                workoutsToDelete.forEach { workout ->
+                                                    database.workoutDao().delete(workout)
+                                                }
+                                            }
+                                        }
+                                    }
                                     workOutElements = workOutElements.toMutableList().also {
                                         it.removeAt(index)
                                     }
@@ -674,6 +702,26 @@ fun convertMillisToTime(millis: Long): String {
     return String.format("%02d:%02d", hours, minutes)
 }
 
+fun convertDateToMillis(dateString: String): Long? {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return try {
+        formatter.parse(dateString)?.time
+    } catch (e: ParseException) {
+        e.printStackTrace()
+        null
+    }
+}
+fun convertTimeToMillis(timeString: String): Long? {
+    val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return try {
+        val parsedDate = formatter.parse(timeString)
+        parsedDate?.time
+    } catch (e: ParseException) {
+        e.printStackTrace()
+        null
+    }
+}
+
 
 suspend fun onSaveButtonClicked(
     title: String,
@@ -688,6 +736,9 @@ suspend fun onSaveButtonClicked(
 ) {
     // Проверка на заполнение всех необходимых полей
     if (title.isBlank() || dateMillis == null || time.isBlank()) {
+        if (title.isBlank()) Log.d("Validation", "Title is blank")
+        if (dateMillis == null) Log.d("Validation", "Date is null")
+        if (time.isBlank()) Log.d("Validation", "Time is blank")
         Toast.makeText(context, "Введите название, дату и время тренировки", Toast.LENGTH_SHORT)
             .show()
         return
@@ -772,3 +823,26 @@ fun combineDateAndTime(date: Date, timeString: String): Date {
     return calendar.time
 }
 
+suspend fun deleteOldTrainingData(trainingId: Int, database: AppDatabase) {
+    // Удаляем все упражнения, связанные с этой тренировкой
+    val workouts = withContext(Dispatchers.IO) {
+        database.workoutDao().getWorkoutsByTrainingId(trainingId)
+    }
+
+    workouts.forEach { workout ->
+        withContext(Dispatchers.IO) {
+            database.workoutDao().delete(workout)
+        }
+    }
+
+    // Удаляем саму тренировку
+    withContext(Dispatchers.IO) {
+        val training = database.trainingDao().getTrainingById(trainingId)
+        if (training != null) {
+            database.trainingDao().delete(training)
+        }
+    }
+
+    // Логируем удаление данных для проверки
+    Log.d("DeleteOldData", "Old data for trainingId $trainingId has been deleted.")
+}
