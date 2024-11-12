@@ -10,14 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
-import com.iu6_mamykin.bodybalance.data.Gender
-import com.iu6_mamykin.bodybalance.data.entities.User
 import com.iu6_mamykin.bodybalance.navigation.AppNavHost
+import com.iu6_mamykin.bodybalance.navigation.Routes
 import com.iu6_mamykin.bodybalance.ui.screens.CreateUpdateTrainingScreen.createNotificationChannel
 import com.iu6_mamykin.bodybalance.ui.theme.BodyBalanceTheme
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,14 +21,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         requestExactAlarmPermission()
         createNotificationChannel(this)
-        // val notificationRoute = intent.getStringExtra("destination_route")
+        val startDestination = intent.getStringExtra("destination_route") ?: Routes.TRAINING_LIST
         // Получаем базу данных из MyApplication
         val database = (applicationContext as MyApplication).database
 
         setContent {
             BodyBalanceTheme {
                 val navController = rememberNavController()
-                AppNavHost(navController = navController, database = database)
+                AppNavHost(navController = navController, database = database, startDestination = startDestination)
             }
         }
     }

@@ -15,10 +15,14 @@ import com.iu6_mamykin.bodybalance.ui.screens.TrainingsWorkoutNamesEditScreen.Tr
 import ui.TrainingListScreen
 
 @Composable
-fun AppNavHost(navController: NavHostController, database: AppDatabase) {
+fun AppNavHost(
+    navController: NavHostController,
+    database: AppDatabase,
+    startDestination: String = Routes.TRAINING_LIST
+) {
     NavHost(
         navController = navController,
-        startDestination = Routes.TRAINING_LIST
+        startDestination = startDestination
     ) {
         //composable(Routes.CREATE_UPDATE_TRAINING) { CreateUpdateTrainingScreen(navController, database) }
         composable(Routes.FEEDBACK) { FeedbackScreen(navController, database) }
