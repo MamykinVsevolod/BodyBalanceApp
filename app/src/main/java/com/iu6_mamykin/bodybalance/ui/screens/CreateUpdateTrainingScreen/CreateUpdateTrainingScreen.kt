@@ -119,8 +119,22 @@ fun CreateUpdateTrainingScreen(navController: NavController, database: AppDataba
     var checked by remember { mutableStateOf(false) }
 
     // для УПРАЖНЕНИЙ
+    /*var workOutElements by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+    val workOutOptions = listOf("Упражнение 1", "Упражнение 2", "Упражнение 3")*/
     var workOutElements by remember { mutableStateOf(listOf<Pair<String, String>>()) }
-    val workOutOptions = listOf("Упражнение 1", "Упражнение 2", "Упражнение 3")
+    var workOutOptions by remember { mutableStateOf(listOf<String>()) } // только названия упражнений
+
+    // Загружаем данные асинхронно
+    LaunchedEffect(Unit) {
+        // Получаем все записи из базы данных
+        val workoutNamesList = database.workoutNameDao().getAllWorkoutNames()
+
+        // Преобразуем их в список Pair (название упражнения, описание/идентификатор)
+        //workOutElements = workoutNamesList.map { Pair(it.name, "Описание: ${it.name}") }
+
+        // Заполняем workOutOptions только названиями упражнений
+        workOutOptions = workoutNamesList.map { it.name }
+    }
 
     val coroutineScope = rememberCoroutineScope()
     Scaffold(topBar = {
