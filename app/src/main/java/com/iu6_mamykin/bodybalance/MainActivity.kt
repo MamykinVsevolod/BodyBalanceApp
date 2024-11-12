@@ -20,21 +20,6 @@ class MainActivity : ComponentActivity() {
         // Получаем базу данных из MyApplication
         val database = (applicationContext as MyApplication).database
 
-        /*GlobalScope.launch {
-            val calendar = Calendar.getInstance()
-            calendar.set(2024, Calendar.APRIL, 30)  // Устанавливаем дату 30 апреля 2024
-            val birthDate = calendar.time
-
-            val newUser = User(
-                name = "Дарья",
-                email = "darya.thebest@gmail.com",
-                birthDate = birthDate,
-                gender = Gender.FEMALE
-            )
-            val userDao = database.userDao()
-            userDao.insertUser(newUser)
-        }*/
-
         setContent {
             BodyBalanceTheme {
                 val navController = rememberNavController()
