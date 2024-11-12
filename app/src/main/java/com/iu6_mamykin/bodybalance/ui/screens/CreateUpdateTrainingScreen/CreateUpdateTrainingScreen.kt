@@ -1,6 +1,13 @@
 package com.iu6_mamykin.bodybalance.ui.screens.CreateUpdateTrainingScreen
 
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -57,7 +64,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationCompat
 import androidx.navigation.NavController
+import com.iu6_mamykin.bodybalance.MainActivity
 import com.iu6_mamykin.bodybalance.R
 import com.iu6_mamykin.bodybalance.data.AppDatabase
 import com.iu6_mamykin.bodybalance.data.entities.Training
@@ -75,6 +84,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -118,7 +132,7 @@ fun CreateUpdateTrainingScreen(
             convertMillisToDate(it)
         } ?: " "  // Обновляем дату напоминания при изменении selectedDateMillis
     }
-
+    var newTrainingId by remember { mutableStateOf(-1) } // НОВЫЙ АЙДИ ТРЕНИРОВКИ - РАССЧИТЫВАЕТСЯ ПОСЛЕ СОЗДАНИЯ ИЛИ РЕДАКТИРОВАНИЯ
     // для ВРЕМЕНИ
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState()
@@ -174,6 +188,7 @@ fun CreateUpdateTrainingScreen(
                     checked = true  // Включаем напоминание
                 }
 
+                newTrainingId = trainingId
                 // Загружаем все упражнения, связанные с тренировкой
                 val workouts = database.workoutDao().getWorkoutsByTrainingId(trainingId)
                 workOutElements = workouts.map { workout ->
@@ -185,6 +200,37 @@ fun CreateUpdateTrainingScreen(
             }
             isLoading.value = false
         }
+    }
+    val createDelayedNotification = remember { mutableStateOf(false) }
+    if (createDelayedNotification.value) {
+        val titleNotification = mutableTitle
+        val timeMessage = selectedTime
+        val dateMessage = selectedDate
+        val message = "$dateMessage | $timeMessage"
+        val procedureId = newTrainingId
+
+        // Получаем дату и время
+        val reminderDate = convertDateToMillis(selectedNotifyDate)
+        val reminderTime = convertTimeToMillis(selectedNotifyTime)
+        val reminderDateLocal =
+            reminderDate?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
+        val reminderTimeLocal =
+            reminderTime?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime() }
+
+        val reminderDateTime = LocalDateTime.of(reminderDateLocal, reminderTimeLocal)
+        // Создаем LocalDateTime из даты и времени
+        /*val reminderDateTime = if (reminderDate != null && reminderTime != null) {
+            LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(reminderDate + reminderTime),
+                ZoneId.systemDefault()
+            )
+        } else null*/
+        Log.d("Notification", reminderDateTime.toString())
+        // Логирование времени перед передачей в scheduleNotification
+        if (reminderDateTime != null) {
+            scheduleNotification(context, titleNotification, message, reminderDateTime, procedureId)
+        }
+        createDelayedNotification.value = false
     }
     Log.d("SaveData", trainingId.toString())
     Scaffold(topBar = {
@@ -206,6 +252,7 @@ fun CreateUpdateTrainingScreen(
 
                             // Если trainingId >= 0, это процесс редактирования
                             if (trainingId >= 0) {
+                                cancelNotification(context, trainingId)
                                 // Удаление всех старых данных, связанных с этой тренировкой
                                 deleteOldTrainingData(trainingId, database)
 
@@ -234,6 +281,14 @@ fun CreateUpdateTrainingScreen(
                                     database,
                                     context
                                 )
+                            }
+
+                            if (selectedNotifyDate != " " && selectedNotifyTime != " " && checked) {
+                                val latestTraining = database.trainingDao().getLatestTraining()
+                                if (latestTraining != null) {
+                                    newTrainingId = latestTraining.trainingId
+                                }
+                                createDelayedNotification.value = true
                             }
                             navController.navigate(Routes.TRAINING_LIST)
                         }
@@ -845,4 +900,83 @@ suspend fun deleteOldTrainingData(trainingId: Int, database: AppDatabase) {
 
     // Логируем удаление данных для проверки
     Log.d("DeleteOldData", "Old data for trainingId $trainingId has been deleted.")
+}
+
+
+fun scheduleNotification(context: Context, title: String, message: String, notificationTime: LocalDateTime, notificationId: Int) {
+    val intent = Intent(context, AlarmReceiver::class.java).apply {
+        putExtra("notification_title", title)
+        putExtra("notification_message", message)
+        putExtra("notification_id", notificationId) // Добавим notificationId в intent
+    }
+    val pendingIntent = PendingIntent.getBroadcast(
+        context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    val systemZoneId = ZoneId.systemDefault()
+    val systemZonedDateTime = notificationTime.atZone(systemZoneId)
+    val triggerAtMillis = systemZonedDateTime.toInstant().toEpochMilli()
+
+    alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+    /*val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val triggerAtMillis = notificationTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()*/
+
+    Log.d("Notification", "Текущее время: ${System.currentTimeMillis()}")
+    Log.d("Notification", "triggerAtMillis: $triggerAtMillis")
+
+    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+}
+fun createNotificationChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channelId = "notification_channel1"
+        val channelName = "My Notification Channel1"
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val notificationChannel = NotificationChannel(channelId, channelName, importance).apply {
+            description = "Channel description"
+        }
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(notificationChannel)
+    }
+}
+class AlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val title = intent.getStringExtra("notification_title") ?: "Тренировка"
+        val message = intent.getStringExtra("notification_message") ?: "Время выполнить тренировку"
+        val notificationId = intent.getIntExtra("notification_id", 0) // Получим notificationId из intent
+
+        // Создаем намерение для запуска MainActivity с необходимым маршрутом
+        val resultIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("destination_route", Routes.trainingProgressWithArgs(notificationId.toString()))
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            notificationId,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notification = NotificationCompat.Builder(context, "notification_channel1")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent) // Устанавливаем PendingIntent для уведомления
+            .setAutoCancel(true) // Автоматическое закрытие уведомления после нажатия
+            .build()
+
+        notificationManager.notify(notificationId, notification) // Используем notificationId для уведомления
+    }
+}
+
+fun cancelNotification(context: Context, notificationId: Int) {
+    val intent = Intent(context, AlarmReceiver::class.java)
+    val pendingIntent = PendingIntent.getBroadcast(
+        context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    alarmManager.cancel(pendingIntent)
 }

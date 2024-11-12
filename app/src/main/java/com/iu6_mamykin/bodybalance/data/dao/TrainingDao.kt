@@ -22,4 +22,7 @@ interface TrainingDao {
 
     @Query("DELETE FROM Trainings WHERE trainingId = :trainingId")
     suspend fun deleteTrainingById(trainingId: Int)
+
+    @Query("SELECT * FROM Trainings ORDER BY trainingId DESC LIMIT 1")
+    suspend fun getLatestTraining(): Training?
 }
