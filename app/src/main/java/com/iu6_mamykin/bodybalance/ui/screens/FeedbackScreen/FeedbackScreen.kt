@@ -40,7 +40,7 @@ fun FeedbackScreen(navController: NavController, database: AppDatabase) {
     var mutableSubject by remember { mutableStateOf(" ") }
     var mutableMessage by remember { mutableStateOf(" ") }
 
-    val email = "support_bodybalance_app@gmail.com"
+    val email = "techbodybalanceapp@gmail.com"
 
     when {
         openAlertDialog -> {
