@@ -266,7 +266,8 @@ fun CreateUpdateTrainingScreen(
                                     selectedNotifyTime,
                                     workOutElements,
                                     database,
-                                    context
+                                    context,
+                                    navController
                                 )
                             } else {
                                 // Если trainingId < 0, значит создаём новую тренировку
@@ -279,7 +280,8 @@ fun CreateUpdateTrainingScreen(
                                     selectedNotifyTime,
                                     workOutElements,
                                     database,
-                                    context
+                                    context,
+                                    navController
                                 )
                             }
 
@@ -290,7 +292,7 @@ fun CreateUpdateTrainingScreen(
                                 }
                                 createDelayedNotification.value = true
                             }
-                            navController.navigate(Routes.TRAINING_LIST)
+                            //navController.navigate(Routes.TRAINING_LIST)
                         }
 
                     },
@@ -787,7 +789,8 @@ suspend fun onSaveButtonClicked(
     reminderTime: String,
     workoutItems: List<Pair<String, String>>,
     database: AppDatabase,
-    context: Context
+    context: Context,
+    navController: NavController
 ) {
     // Проверка на заполнение всех необходимых полей
     if (title.isBlank() || dateMillis == null || time.isBlank()) {
@@ -866,6 +869,7 @@ suspend fun onSaveButtonClicked(
         }
     }
     Toast.makeText(context, "Тренировка сохранена!", Toast.LENGTH_SHORT).show()
+    navController.navigate(Routes.TRAINING_LIST)
 }
 
 fun combineDateAndTime(date: Date, timeString: String): Date {
